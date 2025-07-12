@@ -17,15 +17,12 @@ class Recipe(models.Model):
         Product,
         on_delete=models.CASCADE,
         related_name='recipe',
-        help_text='Bu tarifin çıktısı olan ürün'
     )
     output_quantity = models.PositiveIntegerField(
-        default=1,
-        help_text='Bu tariften kaç birim ürün elde edilir'
+        default=1
     )
     craft_time = models.PositiveIntegerField(
-        default=0,
-        help_text='Üretim süresi (saniye cinsinden)'
+        default=0
     )
 
     def __str__(self):

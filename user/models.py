@@ -8,8 +8,7 @@ from products.models import Product
 class CustomUser(AbstractUser):
     money = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     max_carry_weight = models.FloatField(
-        default=50.0,
-        help_text="Kullanıcının taşıyabileceği maksimum ağırlık (kg)"
+        default=10.0
     )
 
     def __str__(self):
@@ -21,18 +20,25 @@ class CustomUser(AbstractUser):
             item.quantity * item.product.weight
             for item in self.inventory_items.select_related('product').all()
         )
-
 class ProductionExpertise(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='expertises')
-    product_name = models.CharField(max_length=100)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='expertises'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='expert_users'
+    )
     level = models.PositiveIntegerField(default=1)
     xp = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ('user', 'product_name')
+        unique_together = ('user', 'product')
 
     def __str__(self):
-        return f"{self.user.username} - {self.product_name} (Lv. {self.level}, XP: {self.xp})"
+        return f"{self.user.username} – {self.product.name} (Lv. {self.level}, XP: {self.xp})"
 
     def add_xp(self, amount):
         self.xp += amount
@@ -42,11 +48,13 @@ class ProductionExpertise(models.Model):
         self.save()
 
     def required_xp_for_next_level(self):
+        # Seviye³ bazlı artış yerine seviye² bazlı bırakılabilir, örnek olarak:
         return 100 * (self.level ** 2)
 
     def production_speed_multiplier(self):
+        # Seviye arttıkça %10 hız artışı örneği
         return 1.0 / (1 + (self.level - 1) * 0.1)
-
+    
 class Inventory(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
