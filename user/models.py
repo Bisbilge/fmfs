@@ -4,7 +4,7 @@ from django.conf import settings
 
 class CustomUser(AbstractUser):
     money = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    guild = models.CharField(max_length=100, blank=True, null=True)
+
 
     def __str__(self):
         return self.username
